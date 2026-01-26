@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import ServiceManagement
 
 @main
 struct WakeOnLANApp: App {
@@ -17,6 +18,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var popover: NSPopover?
     var eventMonitor: EventMonitor?
     @StateObject private var targetManager = TargetManager()
+
+    private let launchAtLoginKey = "launchAtLogin"
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Create status bar item
@@ -82,9 +85,43 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover?.performClose(nil)
         eventMonitor?.stop()
     }
-    
+
+    var isLaunchAtLoginEnabled: Bool {
+        get {
+            UserDefaults.standard.bool(forKey: launchAtLoginKey)
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: launchAtLoginKey)
+            setLaunchAtLogin(enabled: newValue)
+        }
+    }
+
+    func setLaunchAtLogin(enabled: Bool) {
+        if #available(macOS 13.0, *) {
+            do {
+                if enabled {
+                    try SMAppService.mainApp.register()
+                } else {
+                    try SMAppService.mainApp.unregister()
+                }
+            } catch {
+                print("Failed to \(enabled ? "enable" : "disable") launch at login: \(error.localizedDescription)")
+            }
+        }
+    }
+
+    @objc func toggleLaunchAtLogin() {
+        isLaunchAtLoginEnabled.toggle()
+    }
+
     @objc func showMenu() {
         let menu = NSMenu()
+
+        let launchItem = NSMenuItem(title: "Launch at Login", action: #selector(toggleLaunchAtLogin), keyEquivalent: "")
+        launchItem.state = isLaunchAtLoginEnabled ? .on : .off
+        menu.addItem(launchItem)
+
+        menu.addItem(NSMenuItem.separator())
         menu.addItem(NSMenuItem(title: "Quit Wake on LAN", action: #selector(quitApp), keyEquivalent: "q"))
         statusItem?.menu = menu
         statusItem?.button?.performClick(nil)

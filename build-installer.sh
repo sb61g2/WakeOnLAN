@@ -61,7 +61,8 @@ echo ""
 # Create package root directory
 echo "📁 Creating package structure..."
 mkdir -p "$PKG_ROOT/Applications"
-cp -R "$APP_PATH" "$PKG_ROOT/Applications/"
+# Use ditto to properly copy the app bundle without AppleDouble files
+ditto "$APP_PATH" "$PKG_ROOT/Applications/$PROJECT_NAME.app"
 
 # Create scripts directory
 mkdir -p "$PKG_SCRIPTS"

@@ -90,7 +90,8 @@ chmod +x "$PKG_SCRIPTS/postinstall"
 echo "📦 Building installer package..."
 PKG_OUTPUT="$PROJECT_DIR/$PROJECT_NAME-AppleSilicon-v${VERSION}.pkg"
 
-pkgbuild --root "$PKG_ROOT" \
+# Set COPYFILE_DISABLE to prevent AppleDouble files in the package
+COPYFILE_DISABLE=1 pkgbuild --root "$PKG_ROOT" \
     --identifier "$IDENTIFIER" \
     --version "$VERSION" \
     --install-location "/" \

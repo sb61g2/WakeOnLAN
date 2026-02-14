@@ -67,8 +67,10 @@ mkdir -p "$PKG_ROOT/Applications"
 # Use ditto to properly copy the app bundle without AppleDouble files
 ditto "$APP_PATH" "$PKG_ROOT/Applications/$PROJECT_NAME.app"
 
-# Remove any AppleDouble files that may have been created
-find "$PKG_ROOT" -name "._*" -type f -delete
+# Remove any AppleDouble files using dot_clean (macOS utility)
+dot_clean -m "$PKG_ROOT"
+# Also remove any remaining ._* files
+find "$PKG_ROOT" -name "._*" -type f -delete 2>/dev/null || true
 echo "🧹 Removed AppleDouble metadata files"
 
 # Create scripts directory

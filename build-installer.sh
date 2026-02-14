@@ -5,6 +5,9 @@
 
 set -e
 
+# Prevent AppleDouble files from being created
+export COPYFILE_DISABLE=1
+
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_NAME="WakeOnLAN"
 BUILD_DIR="$PROJECT_DIR/build"
@@ -63,6 +66,10 @@ echo "📁 Creating package structure..."
 mkdir -p "$PKG_ROOT/Applications"
 # Use ditto to properly copy the app bundle without AppleDouble files
 ditto "$APP_PATH" "$PKG_ROOT/Applications/$PROJECT_NAME.app"
+
+# Remove any AppleDouble files that may have been created
+find "$PKG_ROOT" -name "._*" -type f -delete
+echo "🧹 Removed AppleDouble metadata files"
 
 # Create scripts directory
 mkdir -p "$PKG_SCRIPTS"

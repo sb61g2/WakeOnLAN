@@ -41,6 +41,7 @@ xcodebuild -project "$PROJECT_DIR/$PROJECT_NAME.xcodeproj" \
     CODE_SIGN_IDENTITY="-" \
     CODE_SIGN_STYLE=Manual \
     DEVELOPMENT_TEAM="" \
+    ENABLE_HARDENED_RUNTIME=NO \
     build
 
 # Find the built app

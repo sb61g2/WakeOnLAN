@@ -1,11 +1,20 @@
 import SwiftUI
 
+private enum ActiveSheet: Identifiable {
+    case add
+    case edit(WOLTarget)
+    var id: String {
+        switch self {
+        case .add: return "add"
+        case .edit(let t): return t.id.uuidString
+        }
+    }
+}
+
 struct MenuBarContentView: View {
     @EnvironmentObject var targetManager: TargetManager
     @Environment(\.closePopover) private var closePopover
-    @State private var showingAddTarget = false
-    @State private var selectedTarget: WOLTarget?
-    @State private var showingEditTarget = false
+    @State private var activeSheet: ActiveSheet?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -15,7 +24,7 @@ struct MenuBarContentView: View {
                     .font(.system(size: 15, weight: .semibold))
                 Spacer()
                 
-                Button(action: { showingAddTarget = true }) {
+                Button(action: { activeSheet = .add }) {
                     Image(systemName: "plus.circle.fill")
                         .font(.system(size: 18))
                         .foregroundColor(.accentColor)
@@ -63,8 +72,7 @@ struct MenuBarContentView: View {
                                 target: target,
                                 onWake: { sendWakePacket(to: target) },
                                 onEdit: {
-                                    selectedTarget = target
-                                    showingEditTarget = true
+                                    activeSheet = .edit(target)
                                 },
                                 onDelete: { targetManager.deleteTarget(target) }
                             )
@@ -80,14 +88,14 @@ struct MenuBarContentView: View {
             }
         }
         .frame(width: 320, height: 400)
-        .sheet(isPresented: $showingAddTarget) {
-            TargetEditorView(mode: .add) { target in
-                targetManager.addTarget(target)
-            }
-            .environmentObject(targetManager)
-        }
-        .sheet(isPresented: $showingEditTarget) {
-            if let target = selectedTarget {
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .add:
+                TargetEditorView(mode: .add) { target in
+                    targetManager.addTarget(target)
+                }
+                .environmentObject(targetManager)
+            case .edit(let target):
                 TargetEditorView(mode: .edit(target)) { updatedTarget in
                     targetManager.updateTarget(updatedTarget)
                 }
